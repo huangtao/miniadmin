@@ -15,4 +15,5 @@ $RECYCLE.BIN/
 .project
 .settings
 target/
+.*.bkp
 

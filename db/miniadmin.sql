@@ -24,7 +24,7 @@ CREATE TABLE sys_log(
     KEY sys_log_create_time (create_time),
     KEY sys_log_user_id (user_id),
 )
-ENGINE = innodb COMMENT = '操作日志记录';
+ENGINE = InnoDb COMMENT = '操作日志记录';
 
 --------------------------------------
 -- 2.用户表
@@ -40,11 +40,9 @@ CREATE TABLE sys_user(
     email VARCHAR (100) DEFAULT NULL COMMENT '电子邮箱',
     salt VARCHAR (20) DEFAULT '' COMMENT '盐加密',
     status CHAR (1) DEFAULT '0' COMMENT '帐号状态(0正常 1停用)',
-    login_time DATETIME DEFAULT NOW () COMMENT '登陆时间',
-    login_ip VARCHAR (128) DEFAULT NULL COMMENT '登录IP地址',
     create_by INT DEFAULT NULL COMMENT '创建人',
     create_time DATETIME DEFAULT NOW () COMMENT '创建时间',
-    remarks VARCHAR(255) DEFAULT NULL COMMENT '备注信息',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (id),
     UNIQUE (username)
 )
@@ -61,12 +59,12 @@ INSERT INTO sys_user VALUES(1,'user','user',1,'普通用户',NULL,NULL,'-ERP-',0
 DROP TABLE IF EXISTS sys_department;
 CREATE TABLE sys_department(
     id INT NOT NULL AUTO_INCREMENT COMMENT '主键',
-    parent_id INT DEFAULT NULL COMMENT '父部门id',
     name VARCHAR (255) NOT NULL COMMENT '名称',
+    parent_id INT DEFAULT NULL COMMENT '父部门id',
     status CHAR (1) DEFAULT '0' COMMENT '状态(0正常 1停用)',
     create_time DATETIME DEFAULT NOW () COMMENT '创建时间',
     update_time DATETIME DEFAULT NOW () COMMENT '更新时间',
-    remarks VARCHAR(255) DEFAULT NULL COMMENT '备注信息',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (id),
     UNIQUE (name),
 )
@@ -91,7 +89,7 @@ CREATE TABLE sys_role(
     update_by INT DEFAULT NULL COMMENT '更新人',
     update_time DATETIME DEFAULT NOW () COMMENT '更新时间',
     status CHAR (1) DEFAULT '0' COMMENT '角色状态(0正常 1停用)',
-    remarks VARCHAR(255) DEFAULT NULL COMMENT '备注信息',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (id),
     UNIQUE (code),
 ) ENGINE = InnoDb AUTO_INCREMENT=100 COMMENT = '角色表';
@@ -109,17 +107,17 @@ INSERT INTO sys_role VALUES(4,'系统运维员','mainten',NULL,NOW(),NULL,NULL,0
 DROP TABLE IF EXISTS sys_permission;
 CREATE TABLE IF NOT EXISTS sys_permission(
     id INT NOT NULL COMMENT '主键',
-    parent_id INT NOT NULL COMMENT '父级编号',
-    parent_ids varchar(2000) NOT NULL COMMENT '所有父级编号',
+    code VARCHAR (255) NOT NULL COMMENT '权限唯一编码',
     `name` VARCHAR (100) NOT NULL COMMENT '名称',
     `type` VARCHAR (50) NOT NULL COMMENT '类型 UI,DATA',
-    code VARCHAR (255) NOT NULL COMMENT '权限唯一编码',
+    parent_id INT NOT NULL COMMENT '父级编号',
+    parent_ids varchar(2000) NOT NULL COMMENT '所有父级编号',
     status CHAR (1) DEFAULT '0' COMMENT '状态(0正常 1停用)',
     create_by INT DEFAULT NULL COMMENT '创建人',
     create_time DATETIME DEFAULT NOW () COMMENT '创建时间',
     update_by INT DEFAULT NULL COMMENT '更新人',
     update_time DATETIME DEFAULT NOW () COMMENT '更新时间',
-    remarks VARCHAR(255) DEFAULT NULL COMMENT '备注信息',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (id),
     UNIQUE (code)
 )
@@ -205,6 +203,74 @@ INSERT INTO sys_role_permission VALUES(2,1052);
 INSERT INTO sys_role_permission VALUES(2,1053);
 INSERT INTO sys_role_permission VALUES(2,1055);
 
+--------------------------------------
+-- 6.字典类型表
+--------------------------------------
+DROP TABLE IF EXISTS sys_dict_type;
+CREATE TABLE sys_dict_type(
+    id INT NOT NULL COMMENT '主键',
+    `name` VARCHAR (100) NOT NULL COMMENT '名称',
+    `type` VARCHAR (50) NOT NULL COMMENT '类型',
+    status CHAR (1) DEFAULT '0' COMMENT '状态(0正常 1停用)',
+    create_by INT DEFAULT NULL COMMENT '创建人',
+    create_time DATETIME DEFAULT NOW () COMMENT '创建时间',
+    update_by INT DEFAULT NULL COMMENT '更新人',
+    update_time DATETIME DEFAULT NOW () COMMENT '更新时间',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (id),
+    UNIQUE (`type`)
+) ENGINE = InnoDb COMMENT = '字典类型表';
+-------------------------------
+-- 初始化-字典类型表
+-------------------------------
+INSERT INTO sys_dict_type VALUES(1,'用户性别','sys_user_sex','0','admin',NOW(),'',NULL,'用户性别列表');
+INSERT INTO sys_dict_type VALUES(2,'菜单状态','sys_show_hide','0','admin',NOW(),'',NULL,'菜单状态列表');
+INSERT INTO sys_dict_type VALUES(3,'系统开关','sys_normal_disable','0','admin',NOW(),'',NULL,'系统开关列表');
+INSERT INTO sys_dict_type VALUES(4,'系统是否','sys_yse_no','0','admin',NOW(),'',NULL,'系统是否列表');
+INSERT INTO sys_dict_type VALUES(5,'操作类型','sys_oper_type','0','admin',NOW(),'',NULL,'操作类型列表');
+
+--------------------------------------
+-- 7.字典数据表
+--------------------------------------
+DROP TABLE IF EXISTS sys_dict_data;
+CREATE TABLE sys_dict_data(
+    id INT NOT NULL COMMENT '主键',
+    sort INT DEFAULT 0 COMMENT '排序',
+    `name` VARCHAR (100) NOT NULL COMMENT '名称',
+    `value` VARCHAR (100) NOT NULL COMMENT '键值',
+    `type_id` INT NOT NULL COMMENT '字典类型id',
+    is_default CHAR (1) DEFAULT 'N' COMMENT '是否默认(Y是 N否)',
+    status CHAR (1) DEFAULT '0' COMMENT '状态(0正常 1停用)',
+    create_by INT DEFAULT NULL COMMENT '创建人',
+    create_time DATETIME DEFAULT NOW () COMMENT '创建时间',
+    update_by INT DEFAULT NULL COMMENT '更新人',
+    update_time DATETIME DEFAULT NOW () COMMENT '更新时间',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
+    PRIMARY KEY (id)
+) ENGINE = InnoDb COMMENT = '字典数据表';
+-------------------------------
+-- 初始化-字典数据表
+-------------------------------
+INSERT INTO sys_dict_data VALUES(1,1,'女','0',1,'Y','0','admin',NOW(),'',NULL,'性别女');
+INSERT INTO sys_dict_data VALUES(2,2,'男','1',1,'N','0','admin',NOW(),'',NULL,'性别男');
+INSERT INTO sys_dict_data VALUES(3,3,'未知','2',1,'N','0','admin',NOW(),'',NULL,'性别未知');
+
+INSERT INTO sys_dict_data VALUES(4,1,'显示','0',2,'Y','0','admin',NOW(),'',NULL,'显示菜单');
+INSERT INTO sys_dict_data VALUES(5,2,'隐藏','1',2,'N','0','admin',NOW(),'',NULL,'隐藏菜单');
+
+INSERT INTO sys_dict_data VALUES(6,1,'正常','0',3,'Y','0','admin',NOW(),'',NULL,'正常状态');
+INSERT INTO sys_dict_data VALUES(7,2,'停用','1',3,'N','0','admin',NOW(),'',NULL,'停用状态');
+
+INSERT INTO sys_dict_data VALUES(8,1,'是','0',4,'Y','0','admin',NOW(),'',NULL,'是');
+INSERT INTO sys_dict_data VALUES(9,2,'否','1',4,'N','0','admin',NOW(),'',NULL,'否');
+
+INSERT INTO sys_dict_data VALUES(10,99,'其他','0',5,'N','0','admin',NOW(),'',NULL,'其他操作');
+INSERT INTO sys_dict_data VALUES(10,1,'新增','1',5,'N','0','admin',NOW(),'',NULL,'新增操作');
+INSERT INTO sys_dict_data VALUES(11,2,'修改','2',5,'N','0','admin',NOW(),'',NULL,'修改操作');
+INSERT INTO sys_dict_data VALUES(12,3,'删除','3',5,'N','0','admin',NOW(),'',NULL,'删除操作');
+INSERT INTO sys_dict_data VALUES(13,4,'导入','4',5,'N','0','admin',NOW(),'',NULL,'导入操作');
+INSERT INTO sys_dict_data VALUES(14,5,'导出','5',5,'N','0','admin',NOW(),'',NULL,'导出操作');
+INSERT INTO sys_dict_data VALUES(15,6,'授权','6',5,'N','0','admin',NOW(),'',NULL,'授权操作');
 
 ---------------------------------------------------------------------------------------
 
