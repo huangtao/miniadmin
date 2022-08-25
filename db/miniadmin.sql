@@ -171,7 +171,7 @@ INSERT INTO sys_permission VALUES(1060,200,'1,200','查询','UI','LOG_LOGIN_LIST
 INSERT INTO sys_permission VALUES(1061,200,'1,200','导出','UI','LOG_LOGIN_EXPORT','0',1,NOW(),NULL,NULL,NULL);
 
 -- ------------------------------------
--- 5.角色权限表
+-- 6.角色权限表
 -- ------------------------------------
 DROP TABLE IF EXISTS sys_role_permission;
 CREATE TABLE sys_role_permission(
@@ -199,13 +199,46 @@ INSERT INTO sys_role_permission VALUES(2,1053);
 INSERT INTO sys_role_permission VALUES(2,1055);
 
 -- ------------------------------------
--- 6.字典类型表
+-- 7.用户角色表
+-- ------------------------------------
+DROP TABLE IF EXISTS sys_user_role;
+CREATE TABLE sys_user_role(
+    user_id INT NOT NULL COMMENT '用户ID',
+    role_id INT NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (user_id,role_id),
+    FOREIGN KEY (user_id) REFERENCES sys_user(id),
+    FOREIGN KEY (role_id) REFERENCES sys_role(id)
+)ENGINE = InnoDb COMMENT = '部门角色表';
+-- -----------------------------
+-- 初始化-角色部门表
+-- -----------------------------
+INSERT INTO sys_user_role VALUES(2,2);
+
+-- ------------------------------------
+-- 8.部门角色表
+-- ------------------------------------
+DROP TABLE IF EXISTS sys_department_role;
+CREATE TABLE sys_department_role(
+    department_id INT NOT NULL COMMENT '部门ID',
+    role_id INT NOT NULL COMMENT '角色ID',
+    PRIMARY KEY (department_id,role_id),
+    FOREIGN KEY (department_id) REFERENCES sys_department(id),
+    FOREIGN KEY (role_id) REFERENCES sys_role(id)
+)ENGINE = InnoDb COMMENT = '部门角色表';
+-- -----------------------------
+-- 初始化-部门角色表
+-- -----------------------------
+INSERT INTO sys_department_role VALUES(10,2);
+INSERT INTO sys_department_role VALUES(11,2);
+
+-- ------------------------------------
+-- 9.字典类型表
 -- ------------------------------------
 DROP TABLE IF EXISTS sys_dict_type;
 CREATE TABLE sys_dict_type(
     id INT NOT NULL COMMENT '主键',
     `name` VARCHAR (100) NOT NULL COMMENT '名称',
-    `type` VARCHAR (50) NOT NULL COMMENT '类型',
+    code VARCHAR (100) NOT NULL COMMENT '编码',
     status CHAR (1) DEFAULT '0' COMMENT '状态(0正常 1停用)',
     create_by INT DEFAULT NULL COMMENT '创建人',
     create_time DATETIME DEFAULT NOW() COMMENT '创建时间',
@@ -213,7 +246,7 @@ CREATE TABLE sys_dict_type(
     update_time DATETIME DEFAULT NOW() COMMENT '更新时间',
     remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
     PRIMARY KEY (id),
-    UNIQUE (`type`),
+    UNIQUE (code),
     FOREIGN KEY (create_by) REFERENCES sys_user(id),
     FOREIGN KEY (update_by) REFERENCES sys_user(id)
 )ENGINE = InnoDb COMMENT = '字典类型表';
@@ -227,14 +260,14 @@ INSERT INTO sys_dict_type VALUES(4,'系统是否','sys_yse_no','0',1,NOW(),NULL,
 INSERT INTO sys_dict_type VALUES(5,'操作类型','sys_oper_type','0',1,NOW(),NULL,NULL,'操作类型列表');
 
 -- ------------------------------------
--- 7.字典数据表
+-- 10.字典数据表
 -- ------------------------------------
 DROP TABLE IF EXISTS sys_dict_data;
 CREATE TABLE sys_dict_data(
     id INT NOT NULL COMMENT '主键',
     sort INT DEFAULT 0 COMMENT '排序',
     `name` VARCHAR (100) NOT NULL COMMENT '名称',
-    `value` VARCHAR (100) NOT NULL COMMENT '键值',
+    `value` VARCHAR (100) NOT NULL COMMENT '值',
     `type_id` INT NOT NULL COMMENT '字典类型id',
     is_default CHAR (1) DEFAULT 'N' COMMENT '是否默认(Y是 N否)',
     status CHAR (1) DEFAULT '0' COMMENT '状态(0正常 1停用)',
